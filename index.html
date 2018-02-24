@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<style>
+.wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    min-height: 700px;
+}
+.main-container {
+    max-width: 50%;
+    min-height: 50px;
+    background-color: brown;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.loading-bar {
+    height: 10px;
+    width: 0%;
+    max-width: 100%;
+    background-color: blue;
+    transition: all linear 0.5s;
+}
+</style>
+<body>
+    <div class='wrapper'>
+        <div class='main-container'>
+            ox is both centered vertically and horizontally. This will remain centered even if the text in this box changes to ma
+            <div class='loading-bar'></div>
+        </div> 
+    </div>
+    <button id='btn'>Click</button>
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+<script>
+    let initialValue = null;
+    $.get('http://alex.devel.softservice.org/testapi/', 
+        (data) => {
+            initialValue=data.balance_usd;
+            initialValue/=15; 
+            console.log(initialValue);
+        }
+    );
+    
+
+    var btn = document.getElementById('btn');
+    var loadingBar = document.getElementsByClassName('loading-bar')[0];
+    btn.addEventListener('click', foo)
+
+    function foo () {
+        loadingBar.style.width = initialValue*100+'%';
+        var interval = setInterval(
+                ()=>{
+                    if(initialValue >= 1 && loadingBar.style.width>=100+'%') {
+                        console.log(loadingBar.style.width)
+                        clearInterval(interval)
+                    }
+                    loadingBar.style.width = initialValue*100+'%';                
+                    initialValue+=0.02;
+                    console.log(initialValue);
+                }, 1000
+            )
+    }
+    
+</script>
+</body>
+</html>
