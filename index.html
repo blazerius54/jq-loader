@@ -184,6 +184,7 @@
     var initialValue = null;
     var dif = null;
     var target = 15;
+    var loadingBar = document.getElementsByClassName('loading-bar')[0];
     dif = target - initialValue;
     
     $.get('http://alex.devel.softservice.org/testapi/',
@@ -197,48 +198,37 @@
         dif = target - initialValue;
     });;
 
-    // var container = document.getElementsByClassName('main-container')[0];
-    // var arrow = document.querySelector('#arrow-up');
-    // var arrowContainer = document.querySelector('#arrow-container');
-    
-    var targetSpan = document.getElementById('targetSpan');
-    var btn = document.getElementById('btn');
-    var loadingBar = document.getElementsByClassName('loading-bar')[0];
-    var numberContainer = document.querySelector('#number-container');
-    btn.addEventListener('click', foo)
+   
+    $('#btn').on('click', foo)
 
     function foo () {
-        loadingBar.style.width = Math.ceil(initialValue)/ target*100+'%';
-        var width = loadingBar.style.width;
-        var percentDif = 100 - parseInt(width);
+        $('.loading-bar').width(Math.ceil(initialValue)/ target*100+'%');
+        var percentDif = 100 - parseInt(loadingBar.style.width);
         var count = dif / 0.2;
         var step = percentDif/count;
         
-        targetSpan.innerHTML = Math.round(dif);
-        numberContainer.innerHTML = '$'+initialValue.toFixed(1);
+        $('#targetSpan').text(Math.round(dif));
+        $('#number-container').text('$'+initialValue.toFixed(1));
 
         var interval = setInterval(
                 ()=>{
                     initialValue+=0.2;
-                    loadingBar.style.width = step+parseFloat(loadingBar.style.width)+'%';
+                    $('.loading-bar').width(step+parseFloat(loadingBar.style.width)+'%');
                     dif = target - initialValue;          
-                    targetSpan.innerHTML = dif.toFixed(2);
-                    numberContainer.innerHTML = '$'+initialValue.toFixed(1);
-                    
+                    $('#targetSpan').text(dif.toFixed(2));
+                    $('#number-container').text('$'+initialValue.toFixed(1));
                     if(parseFloat(loadingBar.style.width) > 100) {
-                        document.getElementsByClassName('target')[0].classList.add('done');
-                        document.getElementsByClassName('second-flex')[0].style.opacity = '0';
+                        $('.target').addClass('done');
+                        $('.second-flex:first').fadeTo(250, 0);
                         setTimeout(
                             ()=>{
-                                document.getElementsByClassName('second-flex')[0].style.display = 'none';
-                                
+                                $('.second-flex:first').hide()
                             },
                         1000)
                         clearInterval(interval)
                     }
                     console.log(loadingBar.style.width)
-    
-                }, 100
+                }, 500
             )
     }
     
