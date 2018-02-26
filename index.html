@@ -29,6 +29,7 @@
     /* padding: 20px; */
     box-shadow: 0px 0px 19px 0px rgba(0,0,0,0.75);
     overflow: hidden;
+    
 }
 
 
@@ -75,7 +76,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    /* padding-top: 10px;  */
+    padding-bottom: 20px; 
 }
 
 .first-flex > p {
@@ -83,17 +84,29 @@
     color: #626262;
 }
 
+#arrow-container {
+    position: relative;
+    color: #494949;
+
+}
+
 #arrow-up {
   width: 0; 
   height: 0; 
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 5px solid black;
-  margin-top: 15px;
+  border-bottom: 5px solid #494949;
+  margin-top: 18px;
   margin-right: -5px;
   /* position: absolute;
   top: 160%;
   left: 5px; */
+}
+
+#number-container {
+    position: absolute;
+    top: 13px;
+    left: -2px;
 }
 
 .target {
@@ -117,7 +130,22 @@
 }
 
 .second-flex {
+    display: flex;
+    justify-content: center;
     text-align: center;
+    align-items: center;
+    color: #626262;
+    transition: all ease 1s;
+    
+}
+
+.second-flex img {
+    height: 100%;
+    margin-right: 5px;
+}
+
+.done {
+    background: linear-gradient(to bottom, rgb(89, 255, 105) 0%,rgb(62, 255, 82) 0%,rgb(0, 204, 20) 21%,#00A910 100%);    
 }
 </style>
 <body>
@@ -130,7 +158,10 @@
                     <div class='loading-bar-container'>
                         <div class='loading-bar'>
 
-                            <div id="arrow-up"></div>
+                            <div id='arrow-container'>
+                                <div id="arrow-up"></div>
+                                <p id='number-container'>$0</p>
+                            </div>
                         </div>
                     </div>
                     <div class='target'>
@@ -138,9 +169,9 @@
                         <p>$15</p>
                     </div>
                 </div>
-                    <div class='second-flex'>
-                        <p>You need $<span id='targetSpan'></span> more to reach your target</p>
-                    </div>
+                <div class='second-flex'>
+                    <img src="https://cdn2.iconfinder.com/data/icons/basicset/info_16.png" alt=""><p>You need $<span id='targetSpan'></span> more to reach your target</p>
+                </div>
             </div>
         </div> 
     </div>
@@ -151,38 +182,63 @@
   crossorigin="anonymous"></script>
 <script>
     var initialValue = null;
+    var dif = null;
     var target = 15;
-    $.get('http://alex.devel.softservice.org/testapi/', 
+    dif = target - initialValue;
+    
+    $.get('http://alex.devel.softservice.org/testapi/',
         (data) => {
             initialValue=data.balance_usd;
-            initialValue/=target; 
-            console.log(initialValue);
+            dif = target - initialValue;
+            console.log(data) 
         }
-    );
-    var container = document.getElementsByClassName('main-container')[0];
+    ).fail(()=>{
+        initialValue = 0;
+        dif = target - initialValue;
+    });;
+
+    // var container = document.getElementsByClassName('main-container')[0];
+    // var arrow = document.querySelector('#arrow-up');
+    // var arrowContainer = document.querySelector('#arrow-container');
+    
     var targetSpan = document.getElementById('targetSpan');
     var btn = document.getElementById('btn');
     var loadingBar = document.getElementsByClassName('loading-bar')[0];
-    var arrow = document.querySelector('#arrow-up');
-    var difference = null;
+    var numberContainer = document.querySelector('#number-container');
     btn.addEventListener('click', foo)
 
     function foo () {
-        loadingBar.style.width = initialValue*100+'%';
+        loadingBar.style.width = Math.ceil(initialValue)/ target*100+'%';
+        var width = loadingBar.style.width;
+        var percentDif = 100 - parseInt(width);
+        var count = dif / 0.2;
+        var step = percentDif/count;
+        
+        targetSpan.innerHTML = Math.round(dif);
+        numberContainer.innerHTML = '$'+initialValue.toFixed(1);
+
         var interval = setInterval(
                 ()=>{
-                    if(initialValue >= 1 && loadingBar.style.width>=100+'%') {
-                        console.log(loadingBar.style.width)
+                    initialValue+=0.2;
+                    loadingBar.style.width = step+parseFloat(loadingBar.style.width)+'%';
+                    dif = target - initialValue;          
+                    targetSpan.innerHTML = dif.toFixed(2);
+                    numberContainer.innerHTML = '$'+initialValue.toFixed(1);
+                    
+                    if(parseFloat(loadingBar.style.width) > 100) {
+                        document.getElementsByClassName('target')[0].classList.add('done');
+                        document.getElementsByClassName('second-flex')[0].style.opacity = '0';
+                        setTimeout(
+                            ()=>{
+                                document.getElementsByClassName('second-flex')[0].style.display = 'none';
+                                
+                            },
+                        1000)
                         clearInterval(interval)
                     }
-                    difference = target - initialValue*target;
-                    targetSpan.innerHTML= parseInt(difference);
-                    loadingBar.style.width = initialValue*100+'%';                
-                    initialValue+=0.02;
-                    // arrow.style.marginLeft+=2+'%'
-                    console.log(initialValue);
-                    
-                }, 2000
+                    console.log(loadingBar.style.width)
+    
+                }, 100
             )
     }
     
