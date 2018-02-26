@@ -15,9 +15,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
     height: auto;
     min-height: 700px;
 }
+
 .main-container {
     background-color: #F2F2F2;
     width: 30%;
@@ -31,7 +33,6 @@
     overflow: hidden;
     
 }
-
 
 .content {
     /* width: 90%; */
@@ -147,6 +148,10 @@
 .done {
     background: linear-gradient(to bottom, rgb(89, 255, 105) 0%,rgb(62, 255, 82) 0%,rgb(0, 204, 20) 21%,#00A910 100%);    
 }
+
+#btn {
+    margin-top: 50px;
+}
 </style>
 <body>
     <div class='wrapper'>
@@ -174,8 +179,8 @@
                 </div>
             </div>
         </div> 
+        <button id='btn'>Click</button>
     </div>
-    <button id='btn'>Click</button>
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -184,63 +189,75 @@
     var initialValue = null;
     var dif = null;
     var target = 15;
-    dif = target - initialValue;
-    
-    $.get('http://alex.devel.softservice.org/testapi/',
-        (data) => {
-            initialValue=data.balance_usd;
-            dif = target - initialValue;
-            console.log(data) 
-        }
-    ).fail(()=>{
-        initialValue = 0;
-        dif = target - initialValue;
-    });;
-
-    // var container = document.getElementsByClassName('main-container')[0];
-    // var arrow = document.querySelector('#arrow-up');
-    // var arrowContainer = document.querySelector('#arrow-container');
-    
-    var targetSpan = document.getElementById('targetSpan');
-    var btn = document.getElementById('btn');
     var loadingBar = document.getElementsByClassName('loading-bar')[0];
-    var numberContainer = document.querySelector('#number-container');
-    btn.addEventListener('click', foo)
+    dif = target - initialValue;
 
-    function foo () {
-        loadingBar.style.width = Math.ceil(initialValue)/ target*100+'%';
-        var width = loadingBar.style.width;
-        var percentDif = 100 - parseInt(width);
-        var count = dif / 0.2;
-        var step = percentDif/count;
-        
-        targetSpan.innerHTML = Math.round(dif);
-        numberContainer.innerHTML = '$'+initialValue.toFixed(1);
+    $(document).ready(
+        $.ajax({
+            url: 'http://alex.devel.softservice.org/testapi/',
+            success: (data) => {
+                initialValue = data.balance_usd;
+                dif = target - initialValue;
+            },
+            error: (jqXHR, exception) => {
+                var msg = '';
+                if (jqXHR.status === 0) {
+                    msg = 'Not connect.\n Verify Network.';
+                } else if (jqXHR.status == 404) {
+                    msg = 'Requested page not found. [404]';
+                } else if (jqXHR.status == 500) {
+                    msg = 'Internal Server Error [500].';
+                } else if (exception === 'parsererror') {
+                    msg = 'Requested JSON parse failed.';
+                } else if (exception === 'timeout') {
+                    msg = 'Time out error.';
+                } else if (exception === 'abort') {
+                    msg = 'Ajax request aborted.';
+                } else {
+                    msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                }
+                console.log(msg);
+            },
+        })
+    )
+    
+    $('#btn').on('click', foo)
 
-        var interval = setInterval(
-                ()=>{
-                    initialValue+=0.2;
-                    loadingBar.style.width = step+parseFloat(loadingBar.style.width)+'%';
-                    dif = target - initialValue;          
-                    targetSpan.innerHTML = dif.toFixed(2);
-                    numberContainer.innerHTML = '$'+initialValue.toFixed(1);
-                    
-                    if(parseFloat(loadingBar.style.width) > 100) {
-                        document.getElementsByClassName('target')[0].classList.add('done');
-                        document.getElementsByClassName('second-flex')[0].style.opacity = '0';
+    function foo() {
+        if (initialValue) {
+            $('.loading-bar').width(Math.ceil(initialValue) / target * 100 + '%');
+            var percentDif = 100 - parseInt(loadingBar.style.width);
+            var count = dif / 0.2;
+            var step = percentDif / count;
+
+            $('#targetSpan').text(Math.round(dif));
+            $('#number-container').text('$' + initialValue.toFixed(1));
+
+            var interval = setInterval(
+                () => {
+                    initialValue += 0.2;
+                    $('.loading-bar').width(step + parseFloat(loadingBar.style.width) + '%');
+                    dif = target - initialValue;
+                    $('#targetSpan').text(dif.toFixed(2));
+                    $('#number-container').text('$' + initialValue.toFixed(1));
+                    if (parseFloat(loadingBar.style.width) > 100) {
+                        $('.target').addClass('done');
+                        $('.second-flex:first').fadeTo(250, 0);
                         setTimeout(
-                            ()=>{
-                                document.getElementsByClassName('second-flex')[0].style.display = 'none';
-                                
+                            () => {
+                                $('.second-flex:first').hide()
                             },
-                        1000)
+                            1000)
                         clearInterval(interval)
                     }
                     console.log(loadingBar.style.width)
-    
-                }, 100
+                }, 500
             )
+        } else {
+            alert('error')
+        }
     }
+
     
 </script>
 </body>
