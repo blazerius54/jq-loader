@@ -217,6 +217,9 @@
                     msg = 'Uncaught Error.\n' + jqXHR.responseText;
                 }
                 console.log(msg);
+                initialValue = 0;
+                dif = target - initialValue;
+                
             },
         })
     )
@@ -254,7 +257,7 @@
                 }, 500
             )
         } else {
-            alert('error')
+            console.log('error')
         }
     }
 
