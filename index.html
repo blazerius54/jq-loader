@@ -180,78 +180,51 @@
                 </div>
             </div>
         </div> 
-        <button id='btn'>Click</button>
     </div>
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
   crossorigin="anonymous"></script>
 <script>
-    $(document).ready(()=>{
-        $.get({
-            url: 'http://alex.devel.softservice.org/testapi/',
-            success: (data) => {
-                var initialValue = data.balance_usd;
-                var target = 15;
-                var dif = (target - initialValue) || null;
-                var loadingBar = $('.loading-bar')[0];
-                
-                if (initialValue) {
-                    $('.loading-bar').width(Math.ceil(initialValue) / target * 100 + '%');
-                    
-                    var percentDif = 100 - parseInt(loadingBar.style.width);
-                    var count = dif / 0.2;
-                    var step = percentDif / count;
-                    
-                    $('#targetSpan').text(Math.round(dif));
-                    $('#number-container').text('$' + initialValue.toFixed(1));
-                    
-                    var interval = setInterval(
+    $(document).ready(() => {
+
+        var initialValue = 10;
+        var target = 15;
+        var dif = (target - initialValue);
+        var loadingBar = $('.loading-bar')[0];
+
+        $('.loading-bar').width(Math.ceil(initialValue) / target * 100 + '%');
+
+        var percentDif = 100 - parseInt(loadingBar.style.width);
+        var count = dif / 0.2;
+        var step = percentDif / count;
+
+        $('#targetSpan').text(Math.round(dif));
+        $('#number-container').text('$' + initialValue.toFixed(1));
+
+        var interval = setInterval(
+            () => {
+                var loadingBarWidth = $('.loading-bar').width() / $('.loading-bar').parent().width() * 100;
+                loadingBarWidth += step;
+                initialValue += 0.2;
+                dif = target - initialValue;
+                $('.loading-bar').width(loadingBarWidth + '%');
+                $('#targetSpan').text(dif.toFixed(2));
+                $('#number-container').text('$' + initialValue.toFixed(1));
+                console.log(loadingBar.style.width, loadingBarWidth, initialValue)
+                if (loadingBarWidth > 100) {
+                    $('.target').addClass('done');
+                    $('.second-flex:first').fadeTo(250, 0);
+                    setTimeout(
                         () => {
-                            var loadingBarWidth = $('.loading-bar').width()/$('.loading-bar').parent().width()*100;
-                            loadingBarWidth+=step;
-                            initialValue += 0.2;
-                            dif = target - initialValue;
-                            $('.loading-bar').width(loadingBarWidth + '%');
-                            $('#targetSpan').text(dif.toFixed(2));
-                            $('#number-container').text('$' + initialValue.toFixed(1));
-                            console.log(loadingBar.style.width, loadingBarWidth, initialValue)
-                            if (loadingBarWidth > 100) {
-                                $('.target').addClass('done');
-                                $('.second-flex:first').fadeTo(250, 0);
-                                setTimeout(
-                                    () => {
-                                        $('.second-flex:first').hide()
-                                    },
-                                    1000)
-                                clearInterval(interval)
-                            }
-                        }, 500
-                    )
-                } else {
-                    console.log('error')
+                            $('.second-flex:first').hide()
+                        },
+                        1000)
+                    clearInterval(interval)
                 }
-            },
-            error: (jqXHR, exception) => {
-                var msg = '';
-                if (jqXHR.status === 0) {
-                    msg = 'Not connect.\n Verify Network.';
-                } else if (jqXHR.status == 404) {
-                    msg = 'Requested page not found. [404]';
-                } else if (jqXHR.status == 500) {
-                    msg = 'Internal Server Error [500].';
-                } else if (exception === 'parsererror') {
-                    msg = 'Requested JSON parse failed.';
-                } else if (exception === 'timeout') {
-                    msg = 'Time out error.';
-                } else if (exception === 'abort') {
-                    msg = 'Ajax request aborted.';
-                } else {
-                    msg = 'Uncaught Error.\n' + jqXHR.responseText;
-                }
-                console.log(msg);
-            },
-        })
+            }, 500
+        )
+
     })
 
     
