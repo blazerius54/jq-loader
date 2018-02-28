@@ -23,7 +23,6 @@ $(document).ready(() => {
             $('.loading-bar').width(loadingBarWidth + '%');
             $('#targetSpan').text(dif.toFixed(2));
             $('#number-container').text('$' + initialValue.toFixed(1));
-            console.log(loadingBar.style.width, loadingBarWidth, initialValue)
             if (loadingBarWidth > 100) {
                 $('.target').addClass('done');
                 $('.second-flex:first').fadeTo(250, 0);
