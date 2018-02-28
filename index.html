@@ -77,6 +77,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    /* flex-direction: column; */
     padding-bottom: 20px; 
 }
 
@@ -186,18 +187,50 @@
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
   crossorigin="anonymous"></script>
 <script>
-    var initialValue = null;
-    var dif = null;
-    var target = 15;
-    var loadingBar = document.getElementsByClassName('loading-bar')[0];
-    dif = target - initialValue;
-
-    $(document).ready(
-        $.ajax({
+    $(document).ready(()=>{
+        $.get({
             url: 'http://alex.devel.softservice.org/testapi/',
             success: (data) => {
-                initialValue = data.balance_usd;
-                dif = target - initialValue;
+                var initialValue = data.balance_usd;
+                var target = 15;
+                var dif = (target - initialValue) || null;
+                var loadingBar = $('.loading-bar')[0];
+                
+                if (initialValue) {
+                    $('.loading-bar').width(Math.ceil(initialValue) / target * 100 + '%');
+                    
+                    var percentDif = 100 - parseInt(loadingBar.style.width);
+                    var count = dif / 0.2;
+                    var step = percentDif / count;
+                    
+                    $('#targetSpan').text(Math.round(dif));
+                    $('#number-container').text('$' + initialValue.toFixed(1));
+                    
+                    var interval = setInterval(
+                        () => {
+                            var loadingBarWidth = $('.loading-bar').width()/$('.loading-bar').parent().width()*100;
+                            loadingBarWidth+=step;
+                            initialValue += 0.2;
+                            dif = target - initialValue;
+                            $('.loading-bar').width(loadingBarWidth + '%');
+                            $('#targetSpan').text(dif.toFixed(2));
+                            $('#number-container').text('$' + initialValue.toFixed(1));
+                            console.log(loadingBar.style.width, loadingBarWidth, initialValue)
+                            if (loadingBarWidth > 100) {
+                                $('.target').addClass('done');
+                                $('.second-flex:first').fadeTo(250, 0);
+                                setTimeout(
+                                    () => {
+                                        $('.second-flex:first').hide()
+                                    },
+                                    1000)
+                                clearInterval(interval)
+                            }
+                        }, 500
+                    )
+                } else {
+                    console.log('error')
+                }
             },
             error: (jqXHR, exception) => {
                 var msg = '';
@@ -217,49 +250,9 @@
                     msg = 'Uncaught Error.\n' + jqXHR.responseText;
                 }
                 console.log(msg);
-                initialValue = 0;
-                dif = target - initialValue;
-                
             },
         })
-    )
-    
-    $('#btn').on('click', foo)
-
-    function foo() {
-        if (initialValue) {
-            $('.loading-bar').width(Math.ceil(initialValue) / target * 100 + '%');
-            var percentDif = 100 - parseInt(loadingBar.style.width);
-            var count = dif / 0.2;
-            var step = percentDif / count;
-
-            $('#targetSpan').text(Math.round(dif));
-            $('#number-container').text('$' + initialValue.toFixed(1));
-
-            var interval = setInterval(
-                () => {
-                    initialValue += 0.2;
-                    $('.loading-bar').width(step + parseFloat(loadingBar.style.width) + '%');
-                    dif = target - initialValue;
-                    $('#targetSpan').text(dif.toFixed(2));
-                    $('#number-container').text('$' + initialValue.toFixed(1));
-                    if (parseFloat(loadingBar.style.width) > 100) {
-                        $('.target').addClass('done');
-                        $('.second-flex:first').fadeTo(250, 0);
-                        setTimeout(
-                            () => {
-                                $('.second-flex:first').hide()
-                            },
-                            1000)
-                        clearInterval(interval)
-                    }
-                    console.log(loadingBar.style.width)
-                }, 500
-            )
-        } else {
-            console.log('error')
-        }
-    }
+    })
 
     
 </script>
